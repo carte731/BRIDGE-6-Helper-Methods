@@ -5,7 +5,8 @@ declare -a sub
 
 python_Dataframe(){
     
-    sub="${sub[@]}" xcel="${xcel}" python3 - <<END_OF_PYTHON
+    # sub="${sub[@]}" xcel="${xcel}" python3 - <<END_OF_PYTHON
+    xcel="${xcel}" python3 - <<END_OF_PYTHON
     
 import os
 import pandas as pd
@@ -41,8 +42,10 @@ def dataFraming(inputList, sub, path):
     accession = pd.read_excel(path)
     accession.set_index("library_ID", inplace=True)
     # print(accession)
+    # print(inputList)
 
     for key in inputList:
+        print(key + ' ' + inputList[key])
         accession.loc[key, "title"] = "Exome capture of Hordeum vulgare: leaf tissue"
         accession.loc[key, "library_strategy"] = "OTHER"
         accession.loc[key, "library_source"] = "GENOMIC"
@@ -61,8 +64,12 @@ def dataFraming(inputList, sub, path):
     writer.save()
 
 def bashImports():
-    sub=list(os.environ['sub'].split(" "))
+    # sub=list(os.environ['sub'].split(" "))
     path=str(os.environ['xcel'])
+    with open("/home/corey/alexStuff/test.txt", "r" ) as sublist:
+        subq = sublist.read().replace('\n','') 
+    # print(subq)
+    sub=list(subq.split(" "))
     return(sub, path)
 
 def main():
@@ -99,6 +106,7 @@ master_list(){
         filename=${filename%.*}
         sub+=("$filename")
     done
+    echo "${sub[@]}" >> /home/corey/alexStuff/test.txt
 
 }
 
