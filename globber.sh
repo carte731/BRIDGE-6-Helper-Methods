@@ -1,7 +1,7 @@
 #!/bin/bash
 
 declare -a sub
-#module load python3_ML/3.6.4
+module load python3_ML/3.6.4
 
 python_Dataframe(){
     
@@ -123,8 +123,8 @@ dir_maker(){
     #     output=${4}
     # else
     #     output=$HOME
-    # temploc=$(mktemp -d)
-    temploc=/home/corey/temp/BRIDG6_FASTQ/
+    temp=$(mktemp -d)
+    temploc="${temp}"/BRIDG6_FASTQ/
     if [ ! -d "${temploc}" ]; then
         # mkdir "${temploc}"BRIDG6_FASTQ
         mkdir "${temploc}"
@@ -161,6 +161,13 @@ copier(){
     while read -r line; do
         cp "${line}" "${temploc}"/fastq_files
     done < "${temploc}"found_list.txt
+
+    s3cmd mb s3://BUCKET  > /dev/null
+    if [ s3cmd put --recursive "${temploc}" s3://BUCKET ]; then
+        echo -e "Transfer complete...\n"
+    fi
+    echo -e "Transfer failed...\n"
+
 }
 
 main(){
