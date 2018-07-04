@@ -143,7 +143,7 @@ master_list(){
 
     cd $path
     declare -a dir_list=$(ls -d */)
-
+    counter=0
     for subdirs in ${dir_list[@]}; do
         declare -a sub=()
         localDir="$path""$subdirs"
@@ -154,6 +154,8 @@ master_list(){
             sub+=("$filename")
         done
         python_Dataframe
+        echo -e "ROUND $counter...\n"
+        $((counter+1))
     done
 
 }
