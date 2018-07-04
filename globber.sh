@@ -123,13 +123,14 @@ dir_maker(){
     #     output=${4}
     # else
     #     output=$HOME
-    temp=$(mktemp -d)
-    temploc="${temp}"/BRIDG6_FASTQ/
+    # temp=$(mktemp -d)
+    # temploc="${temp}"/BRIDG6_FASTQ/
+    temploc=/panfs/roc/scratch/BRIDG6_FASTQ/
     if [ ! -d "${temploc}" ]; then
         # mkdir "${temploc}"BRIDG6_FASTQ
         mkdir "${temploc}"
-        mkdir "${temploc}"/excel_files
-        mkdir "${temploc}"/fastq_files    
+        mkdir "${temploc}"excel_files
+        mkdir "${temploc}"fastq_files    
     fi
 
 }
@@ -143,7 +144,7 @@ master_list(){
 
     cd $path
     declare -a dir_list=$(ls -d */)
-    counter=0
+    counter=1
     for subdirs in ${dir_list[@]}; do
         declare -a sub=()
         localDir="$path""$subdirs"
@@ -162,7 +163,7 @@ master_list(){
 
 copier(){
     while read -r line; do
-        cp "${line}" "${temploc}"/fastq_files
+        cp "${line}" "${temploc}"fastq_files
     done < "${temploc}"found_list.txt
 
     s3cmd mb s3://BRIDG6_FASTQ  > /dev/null
