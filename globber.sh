@@ -163,7 +163,7 @@ copier(){
     done < "${temploc}"found_list.txt
 
     s3cmd mb s3://BRIDG6_FASTQ  > /dev/null
-    if [ s3cmd put --recursive "${temploc}" s3://BRIDG6_FASTQ ]; then
+    if (( s3cmd put --recursive "${temploc}" s3://BRIDG6_FASTQ )); then
         echo -e "Transfer complete...\n"
     fi
     echo -e "Transfer failed...\n"
