@@ -5,78 +5,112 @@ declare -a sub
 
 python_Dataframe(){
     
-    # sub="${sub[@]}" xcel="${xcel}" python3 - <<END_OF_PYTHON
-    xcel="${xcel}" python3 - <<END_OF_PYTHON
+    sub="${sub[@]}" xcel="${xcel}" localD="${localDir}" output="${temploc}" fileType="${fileType}" python3 - <<END_OF_PYTHON
     
 import os
 import pandas as pd
 
-def fileIso(sub):
+def fileIso(sub, localDir, fileType):
     reverse=-1
     inputList={}
     word=""
-    inputR12=""
-    gate=False
-    for i in sub:
+    for index, i in enumerate(sub):
             while(i[reverse] != "_"):
                 word+=i[reverse]
                 reverse-=1
             word="".join(reversed(word))
-            if((word.lower() != "rasmusson") and(word.lower() != "unmatched")):
-                for u in word:
-                    if((ord(u) >= 48) and (ord(u) <= 57) and (gate == False)):
-                            inputR12+="_"
-                            inputR12+=u
-                            gate = True
-                    else:
-                            inputR12+=u
-                inputList[word]=inputR12
-            gate = False
-            inputR12="" 
+            inputList[word]=[i + fileType, localDir + i + fileType]
             word=""
             reverse=-1
     return(inputList)
 
-def dataFraming(inputList, sub, path):
-    # accession = pd.read_excel("/home/corey/alexStuff/Exome_SRA_metadata_Ana.xlsx")
-    accession = pd.read_excel(path)
-    accession.set_index("library_ID", inplace=True)
-    # print(accession)
-    # print(inputList)
+def dataFrame_handler(output, path):
+    if(os.path.isfile(output + "excel_files/output.xlsx")):
+        accession = pd.read_excel(output + "excel_files/output.xlsx")
+        accession.set_index("library_ID", inplace=True)
+    else:
+        accession = pd.read_excel(path)
+        accession.set_index("library_ID", inplace=True)
+
+    if(os.path.isfile(output + "excel_files/not_found_output.xlsx")):
+        NotFoundDF = pd.read_excel(output + "excel_files/not_found_output.xlsx")
+        NotFoundDF.set_index("library_ID", inplace=True)
+    else:
+        NotFoundDF = pd.DataFrame(columns = ["library_ID", 
+        "title",
+        "library_strategy", 
+        "library_source", 
+        "library_selection", 
+        "library_layout", 
+        "platform", 
+        "instrument_model", 
+        "design_description",
+        "filetype",
+        "filename",
+        "filename2",
+        "filename3",
+        "filename4",])
+        NotFoundDF.set_index("library_ID", inplace=True)
+
+    return(accession, NotFoundDF)
+
+
+def dataFraming(inputList, sub, path, output, fileType):
+
+    accession, NotFoundDF = dataFrame_handler(output, path)
+
+    fastqFound = ''
 
     for key in inputList:
-        print(key + ' ' + inputList[key])
-        accession.loc[key, "title"] = "Exome capture of Hordeum vulgare: leaf tissue"
-        accession.loc[key, "library_strategy"] = "OTHER"
-        accession.loc[key, "library_source"] = "GENOMIC"
-        accession.loc[key, "library_selection"] = "Hybrid Selection"
-        accession.loc[key, "library_layout"] = "paired"
-        accession.loc[key, "platform"] = "ILLUMINA"
-        accession.loc[key, "instrument_model"] = "Illumina HiSeq 2500"
-        accession.loc[key, "design_description"] = "Genomic libraries constructed with Roche NimbleGen SeqCap EZ Developer probe pool"
-        accession.loc[key, "filetype"] = "fastq"
-        accession.loc[key, "filename"] = inputList[key] + "_R1.fastq.gz"
-        accession.loc[key, "filename2"] = inputList[key] + "_R2.fastq.gz"
-    
-    writer = pd.ExcelWriter("/home/corey/alexStuff/output.xlsx")
-    # writer = pd.ExcelWriter("~/output.xlsx")
+        dataFrameKey=''
+        if(key in accession.index):
+            dataFrameKey=accession
+            fastqFound += inputList[key][1] + "\n"
+        else:           
+            dataFrameKey=NotFoundDF
+
+        dataFrameKey.loc[key, "title"] = "Exome capture of Hordeum vulgare: leaf tissue"
+        dataFrameKey.loc[key, "library_strategy"] = "OTHER"
+        dataFrameKey.loc[key, "library_source"] = "GENOMIC"
+        dataFrameKey.loc[key, "library_selection"] = "Hybrid Selection"
+        dataFrameKey.loc[key, "library_layout"] = "paired"
+        dataFrameKey.loc[key, "platform"] = "ILLUMINA"
+        dataFrameKey.loc[key, "instrument_model"] = "Illumina HiSeq 2500"
+        dataFrameKey.loc[key, "design_description"] = "Genomic libraries constructed with Roche NimbleGen SeqCap EZ Developer probe pool"
+        dataFrameKey.loc[key, "filetype"] = "fastq"
+        if(pd.isnull(dataFrameKey.loc[key, "filename"])):
+            dataFrameKey.loc[key, "filename"] = inputList[key][0]
+        elif(pd.isnull(dataFrameKey.loc[key, "filename2"])):
+            dataFrameKey.loc[key, "filename2"] = inputList[key][0]
+        elif(pd.isnull(dataFrameKey.loc[key, "filename3"])):
+            dataFrameKey.loc[key, "filename3"] = inputList[key][0]
+        elif(pd.isnull(dataFrameKey.loc[key, "filename4"])):
+            dataFrameKey.loc[key, "filename4"] = inputList[key][0]
+
+    writer_notFound = pd.ExcelWriter(output + "excel_files/not_found_output.xlsx")
+    NotFoundDF.to_excel(writer_notFound)
+    writer_notFound.save()
+
+    writer = pd.ExcelWriter(output + "excel_files/output.xlsx")
     accession.to_excel(writer)
     writer.save()
 
+    if(fastqFound):
+        with open(output + "found_list.txt", "a+") as foundFiles:
+            foundFiles.write(fastqFound)
+
 def bashImports():
-    # sub=list(os.environ['sub'].split(" "))
+    sub=list(os.environ['sub'].split(" "))
     path=str(os.environ['xcel'])
-    with open("/home/corey/alexStuff/test.txt", "r" ) as sublist:
-        subq = sublist.read().replace('\n','') 
-    # print(subq)
-    sub=list(subq.split(" "))
-    return(sub, path)
+    output=str(os.environ['output'])
+    localDir=str(os.environ['localD'])
+    fileType=str(os.environ['fileType'])
+    return(sub, path, output, localDir, fileType)
 
 def main():
-    sub, path=bashImports()
-    inputList=fileIso(sub)
-    # print(fileListing)
-    dataFraming(inputList, sub, path)
+    sub, path, output, localDir, fileType=bashImports()
+    inputList=fileIso(sub, localDir, fileType)
+    dataFraming(inputList, sub, path, output, fileType)
 
 main()
 
@@ -84,35 +118,57 @@ END_OF_PYTHON
 
 }
 
-master_list(){
-    # args=("$@")
-    # local path="/panfs/roc/scratch/agonzale/NAM_GBS_2_6row/Barcode_Splitter_Output/NAM_GBS_6row/"
-    # local path="/home/corey/alexStuff/"
-    # local path=${args[0]}
-    local path=${1}
-    # local fileType=".fastq"
-    # local fileType=${args[1]}
-    local fileType=${2}
-    # local xcel="/home/corey/alexStuff/Exome_SRA_metadata_Ana_2.xlsx"
-    # local xcel=${args[2]}
-    xcel=${3}
-    # output=${4}
-
-    # local dirFiles=$(find "$PWD" -type f -name '*.fastq*')
-    local dirFiles=$(find "$path" -type f -name "*${fileType}*")
-    
-    for i in ${dirFiles[@]}; do
-        local filename=${i##*/}
-        filename=${filename%.*}
-        sub+=("$filename")
-    done
-    echo "${sub[@]}" >> /home/corey/alexStuff/test.txt
+dir_maker(){
+    # if [ -d output ]; then
+    #     output=${4}
+    # else
+    #     output=$HOME
+    # temploc=$(mktemp -d)
+    temploc=/home/corey/temp/BRIDG6_FASTQ/
+    if [ ! -d "${temploc}" ]; then
+        # mkdir "${temploc}"BRIDG6_FASTQ
+        mkdir "${temploc}"
+        mkdir "${temploc}"/excel_files
+        mkdir "${temploc}"/fastq_files    
+    fi
 
 }
 
+
+master_list(){
+
+    local path=${1}
+    fileType=${2}
+    xcel=${3}
+
+    declare -a dir_list=$(ls -d */)
+
+    for subdirs in ${dir_list[@]}; do
+        declare -a sub=()
+        localDir="$path""$subdirs"
+        local dirFiles=$(find "$path""$subdirs" -type f -name "*${fileType}*")
+        for i in ${dirFiles[@]}; do
+            local filename=${i##*/}
+            filename=${filename%.*}
+            sub+=("$filename")
+        done
+        python_Dataframe
+    done
+
+}
+
+copier(){
+    while read -r line; do
+        cp "${line}" "${temploc}"/fastq_files
+    done < "${temploc}"found_list.txt
+}
+
 main(){
+
+    dir_maker    
     master_list "$@"
-    python_Dataframe
+    copier
+
 }
 
 main "$@"
