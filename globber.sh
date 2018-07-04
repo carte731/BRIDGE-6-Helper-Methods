@@ -162,8 +162,8 @@ copier(){
         cp "${line}" "${temploc}"/fastq_files
     done < "${temploc}"found_list.txt
 
-    s3cmd mb s3://BUCKET  > /dev/null
-    if [ s3cmd put --recursive "${temploc}" s3://BUCKET ]; then
+    s3cmd mb s3://BRIDG6_FASTQ  > /dev/null
+    if [ s3cmd put --recursive "${temploc}" s3://BRIDG6_FASTQ ]; then
         echo -e "Transfer complete...\n"
     fi
     echo -e "Transfer failed...\n"
