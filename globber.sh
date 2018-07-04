@@ -141,6 +141,7 @@ master_list(){
     fileType=${2}
     xcel=${3}
 
+    cd $path
     declare -a dir_list=$(ls -d */)
 
     for subdirs in ${dir_list[@]}; do
