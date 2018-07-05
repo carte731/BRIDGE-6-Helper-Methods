@@ -52,6 +52,7 @@ def dataFrame_handler(output, path):
         "filename4",
         "filename5",
         "filename6",
+        "filename7",
         "assembly"])
         NotFoundDF.set_index("library_ID", inplace=True)
 
