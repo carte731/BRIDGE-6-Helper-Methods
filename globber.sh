@@ -49,7 +49,9 @@ def dataFrame_handler(output, path):
         "filename",
         "filename2",
         "filename3",
-        "filename4",])
+        "filename4",
+        "filename5",
+        "filename6",])
         NotFoundDF.set_index("library_ID", inplace=True)
 
     return(accession, NotFoundDF)
@@ -86,6 +88,10 @@ def dataFraming(inputList, sub, path, output, fileType):
             dataFrameKey.loc[key, "filename3"] = inputList[key][0]
         elif(pd.isnull(dataFrameKey.loc[key, "filename4"])):
             dataFrameKey.loc[key, "filename4"] = inputList[key][0]
+        elif(pd.isnull(dataFrameKey.loc[key, "filename5"])):
+            dataFrameKey.loc[key, "filename5"] = inputList[key][0]
+        elif(pd.isnull(dataFrameKey.loc[key, "filename6"])):
+            dataFrameKey.loc[key, "filename6"] = inputList[key][0]
 
     writer_notFound = pd.ExcelWriter(output + "excel_files/not_found_output.xlsx")
     NotFoundDF.to_excel(writer_notFound)
@@ -155,10 +161,10 @@ master_list(){
             sub+=("$filename")
         done
         python_Dataframe
-        echo -e "ROUND $counter...\n"
-        $((counter+1))
+        echo -e "ROUND $subdirs complete...\n"
     done
 
+    echo -e "OPERATIONS COMPLETE...\n"
 }
 
 copier(){
