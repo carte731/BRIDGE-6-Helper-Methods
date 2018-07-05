@@ -95,6 +95,10 @@ def dataFraming(inputList, sub, path, output, fileType):
             dataFrameKey.loc[key, "filename5"] = inputList[key][0]
         elif(pd.isnull(dataFrameKey.loc[key, "filename6"])):
             dataFrameKey.loc[key, "filename6"] = inputList[key][0]
+        elif(pd.isnull(dataFrameKey.loc[key, "filename7"])):
+            dataFrameKey.loc[key, "filename7"] = inputList[key][0]
+        elif(pd.isnull(dataFrameKey.loc[key, "filename8"])):
+            dataFrameKey.loc[key, "filename8"] = inputList[key][0]
 
     writer_notFound = pd.ExcelWriter(output + "excel_files/not_found_output.xlsx")
     NotFoundDF.to_excel(writer_notFound)
