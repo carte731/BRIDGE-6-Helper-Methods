@@ -1,16 +1,17 @@
 #!/bin/bash
 
-declare -a sub
-module load python3_ML/3.6.4
+declare -a sub #creates a BASH list, used for saving lists of files held in directory
+module load python3_ML/3.6.4 # Loads Python-3 module for use
 
 python_Dataframe(){
     
+    # Activates Python and exports BASH variables into the new Python environment
     sub="${sub[@]}" xcel="${xcel}" localD="${localDir}" output="${temploc}" fileType="${fileType}" python3 - <<END_OF_PYTHON
     
 import os
 import pandas as pd
 
-def fileIso(sub, localDir, fileType):
+def fileIso(sub, localDir, fileType): # Isolates accession numbers from file names
     reverse=-1
     inputList={}
     word=""
@@ -24,7 +25,7 @@ def fileIso(sub, localDir, fileType):
             reverse=-1
     return(inputList)
 
-def dataFrame_handler(output, path):
+def dataFrame_handler(output, path): # Checks if Xcel files are there, if not_found.xslx is not found it's created.
     if(os.path.isfile(output + "excel_files/output.xlsx")):
         accession = pd.read_excel(output + "excel_files/output.xlsx")
         accession.set_index("library_ID", inplace=True)
@@ -53,14 +54,13 @@ def dataFrame_handler(output, path):
         "filename5",
         "filename6",
         "filename7",
-        "filename8",
         "assembly"])
         NotFoundDF.set_index("library_ID", inplace=True)
 
     return(accession, NotFoundDF)
 
 
-def dataFraming(inputList, sub, path, output, fileType):
+def dataFraming(inputList, sub, path, output, fileType): # Changes the data-frames and saves them to a xcel file, It also saves the found fastq listing
 
     accession, NotFoundDF = dataFrame_handler(output, path)
 
@@ -95,10 +95,6 @@ def dataFraming(inputList, sub, path, output, fileType):
             dataFrameKey.loc[key, "filename5"] = inputList[key][0]
         elif(pd.isnull(dataFrameKey.loc[key, "filename6"])):
             dataFrameKey.loc[key, "filename6"] = inputList[key][0]
-        elif(pd.isnull(dataFrameKey.loc[key, "filename7"])):
-            dataFrameKey.loc[key, "filename7"] = inputList[key][0]
-        elif(pd.isnull(dataFrameKey.loc[key, "filename8"])):
-            dataFrameKey.loc[key, "filename8"] = inputList[key][0]
 
     writer_notFound = pd.ExcelWriter(output + "excel_files/not_found_output.xlsx")
     NotFoundDF.to_excel(writer_notFound)
@@ -112,7 +108,7 @@ def dataFraming(inputList, sub, path, output, fileType):
         with open(output + "found_list.txt", "a+") as foundFiles:
             foundFiles.write(fastqFound)
 
-def bashImports():
+def bashImports(): # Imports variables from BASH environment
     sub=list(os.environ['sub'].split(" "))
     path=str(os.environ['xcel'])
     output=str(os.environ['output'])
@@ -120,7 +116,7 @@ def bashImports():
     fileType=str(os.environ['fileType'])
     return(sub, path, output, localDir, fileType)
 
-def main():
+def main(): # Main function
     sub, path, output, localDir, fileType=bashImports()
     inputList=fileIso(sub, localDir, fileType)
     dataFraming(inputList, sub, path, output, fileType)
@@ -131,16 +127,10 @@ END_OF_PYTHON
 
 }
 
-dir_maker(){
-    # if [ -d output ]; then
-    #     output=${4}
-    # else
-    #     output=$HOME
-    # temp=$(mktemp -d)
-    # temploc="${temp}"/BRIDG6_FASTQ/
+dir_maker(){ # Creates file structure for data output
+
     temploc=/panfs/roc/scratch/BRIDG6_FASTQ/
-    if [ ! -d "${temploc}" ]; then
-        # mkdir "${temploc}"BRIDG6_FASTQ
+    if [ ! -d "${temploc}" ]; then # Checks if it directory's are already there
         mkdir "${temploc}"
         mkdir "${temploc}"excel_files
         mkdir "${temploc}"fastq_files    
@@ -149,7 +139,7 @@ dir_maker(){
 }
 
 
-master_list(){
+master_list(){ # Creates listings from directory structures 
 
     local path=${1}
     fileType=${2}
@@ -174,21 +164,15 @@ master_list(){
     echo -e "OPERATIONS COMPLETE...\n"
 }
 
-copier(){
+copier(){ # Reads the "found fastq" text file line-by-line and copies them to the output scratch directory
+
     while read -r line; do
         cp "${line}" "${temploc}"fastq_files
     done < "${temploc}"found_list.txt
 
-    # s3cmd mb s3://BRIDG6_FASTQ  > /dev/null
-    # # if (( s3cmd put --recursive "${temploc}" s3://BRIDG6_FASTQ )); then
-    # s3cmd put --recursive "${temploc}" s3://BRIDG6_FASTQ
-    #     # echo -e "Transfer complete...\n"
-    # # fi
-    # # echo -e "Transfer failed...\n"
-
 }
 
-main(){
+main(){ # Main function for BASH
 
     dir_maker    
     master_list "$@"
@@ -196,4 +180,4 @@ main(){
 
 }
 
-main "$@"
+main "$@" # runs main function and imports parameters arguments.
