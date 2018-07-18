@@ -1,0 +1,36 @@
+#!/usr/bin/env python3
+
+import pandas as pd
+import sys
+import os
+
+input_excel=str(sys.argv[1])
+out=str(sys.argv[2])
+output_DF = {"keys":[], "fileName":[]}
+
+def inserter(key, fileName, num):
+    
+
+def swapper(key, fileName):
+    
+
+def excel_copier():
+    accession_DF = pd.from_excel(input_excel)
+    accession_DF.set_index("library_ID", inplace=True)
+    for key in accession_DF:
+        if(pd.isnull(accession_DF.loc[key, "filename2"])):
+            swapper(key, accession_DF.loc[key, "filename"])
+        else:
+            for num in range(7):
+                num+=2
+                fileName = "filename" + str(num)
+                if(! pd.isnull(accession_DF.loc[key, fileName])):
+                    inserter(key, accession_DF.loc[key, fileName], num)
+
+
+def saver():
+    
+        
+def main():
+    excel_copier()
+    saver()
