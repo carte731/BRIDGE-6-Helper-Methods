@@ -2,7 +2,7 @@
 
 This repo contains helper methods used for the BRIDGE 6 research project.
 
-**Development of a multi-parent population for genetic mapping and allele discovery in six-row barley**
+# **Development of a multi-parent population for genetic mapping and allele discovery in six-row barley** #
 
 Alex Ollhoff (1), Ana M. Poets (1), Priyanka Tyagi (2), Li Lei (1), Corey Carter (1), Candice N. Hirsch (1), Lin Li (3), Gina Brown-Guedira (2), Peter L. Morrell (1), Gary J. Muehlbauer (1,4), Kevin P. Smith (1)
 
