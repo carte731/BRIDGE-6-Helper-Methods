@@ -83,6 +83,7 @@ def dataFraming(inputList, sub, path, output, fileType): # Changes the data-fram
         dataFrameKey.loc[key, "instrument_model"] = "Illumina HiSeq 2500"
         dataFrameKey.loc[key, "design_description"] = "Genomic libraries constructed with Roche NimbleGen SeqCap EZ Developer probe pool"
         dataFrameKey.loc[key, "filetype"] = "fastq"
+        
         if(pd.isnull(dataFrameKey.loc[key, "filename"])):
             dataFrameKey.loc[key, "filename"] = inputList[key][0]
         elif(pd.isnull(dataFrameKey.loc[key, "filename2"])):

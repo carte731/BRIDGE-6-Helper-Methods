@@ -4,33 +4,70 @@ import pandas as pd
 import sys
 import os
 
-input_excel=str(sys.argv[1])
-out=str(sys.argv[2])
-output_DF = {"keys":[], "fileName":[]}
+def input_ARGS(): # Accepts parameters from agruments
+    input_excel=str(sys.argv[1]) # Excel input file
+    out=str(sys.argv[2]) # output directory
+    out_file=str(sys.argv[3]) # output excel file name
+    output_DF = dict() ## Creates dictionary
+    return(input_excel, out, output_DF, out_file)
 
-def inserter(key, fileName, num):
-    
-
-def swapper(key, fileName):
-    
-
-def excel_copier():
-    accession_DF = pd.from_excel(input_excel)
+def excel_copier(input_excel, out, output_DF): # Scans Excel and saves it to a dictionary with file name as content.
+    accession_DF = pd.read_excel(input_excel)
+    accession_listing = accession_DF["library_ID"].tolist()
     accession_DF.set_index("library_ID", inplace=True)
-    for key in accession_DF:
+    for key in accession_listing:
         if(pd.isnull(accession_DF.loc[key, "filename2"])):
-            swapper(key, accession_DF.loc[key, "filename"])
-        else:
+            output_DF[key] = accession_DF.loc[key, "filename"]
+        else: # Checks if theres more than one files, if so - add a new entry into the dictionary
+            output_DF[key] = accession_DF.loc[key, "filename"]
             for num in range(7):
                 num+=2
                 fileName = "filename" + str(num)
-                if(! pd.isnull(accession_DF.loc[key, fileName])):
-                    inserter(key, accession_DF.loc[key, fileName], num)
+                if(pd.notnull(accession_DF.loc[key, fileName])):
+                    key_header = str(key) + "-" + str(num)
+                    output_DF[key_header] = accession_DF.loc[key, fileName]
+    return(output_DF)
 
 
-def saver():
+def saver(output_DF, out, out_file):
+    final_DF = pd.DataFrame(columns = ["library_ID", # Creates new DataFrame
+        "title",
+        "library_strategy", 
+        "library_source", 
+        "library_selection", 
+        "library_layout", 
+        "platform", 
+        "instrument_model", 
+        "design_description",
+        "filetype",
+        "filename",
+        "assembly"])
+
+    for idx, DF_keys in enumerate(sorted(output_DF)): # Saves dictionary keys to Library library ID column
+        final_DF.loc[idx, "library_ID"] = DF_keys
+
+    final_DF.set_index("library_ID", inplace=True) # Sets "library_ID" as the index
     
+    for keys in final_DF.index: # Saves data to each index position
+        final_DF.loc[keys, "title"] = "Exome capture of Hordeum vulgare: leaf tissue"
+        final_DF.loc[keys, "library_strategy"] = "OTHER"
+        final_DF.loc[keys, "library_source"] = "GENOMIC"
+        final_DF.loc[keys, "library_selection"] = "Hybrid Selection"
+        final_DF.loc[keys, "library_layout"] = "paired"
+        final_DF.loc[keys, "platform"] = "ILLUMINA"
+        final_DF.loc[keys, "instrument_model"] = "Illumina HiSeq 2500"
+        final_DF.loc[keys, "design_description"] = "Genomic libraries constructed with Roche NimbleGen SeqCap EZ Developer probe pool"
+        final_DF.loc[keys, "filetype"] = "fastq"
+        final_DF.loc[keys, "filename"] = output_DF.get(keys) # Saves the accession ID's file name from dictionary
+
+    writer = pd.ExcelWriter(out + out_file + ".xlsx") # This writes the DataFrame to Excel spreadsheet
+    final_DF.to_excel(writer)
+    writer.save()
         
-def main():
-    excel_copier()
-    saver()
+def main(): # Main function, does main stuff 
+    input_excel, out, output_DF, out_file = input_ARGS()
+    output_DF = excel_copier(input_excel, out, output_DF)
+    saver(output_DF, out, out_file)
+    print("Operations complete and Excel file saved...")
+
+main() # Runs the script
