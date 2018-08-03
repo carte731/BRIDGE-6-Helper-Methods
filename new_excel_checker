@@ -6,31 +6,16 @@ module load python3_ML/3.6.4 # Loads Python-3 module for use
 python_Dataframe(){
     
     # Activates Python and exports BASH variables into the new Python environment
-    sub="${sub[@]}" found_excel="${found_xcel}" localD="${localDir}" output="${temploc}" fileType="${fileType}" python3 - <<END_OF_PYTHON
+    sub="${sub[@]}" output="${output}" python3 - <<END_OF_PYTHON
 
 import os
-import pandas as pd
+import pickle
 
-def fileIso(sub, localDir, fileType): # Isolates accession numbers from file names
+def fileIso(sub): # Isolates accession numbers from directory file names
     reverse=-1
     inputList={}
     word=""
-    for index, i in enumerate(sub):
-            while(i[reverse] != "_"):
-                word+=i[reverse]
-                reverse-=1
-            word="".join(reversed(word))
-            # inputList[i + fileType]=[word]
-            inputList[word].append([i + fileType])
-            word=""
-            reverse=-1
-    return(inputList)
-
-def dirIso(aList): # Isolates accession numbers from file names
-    reverse=-1
-    inputList={}
-    word=""
-    for index, i in enumerate(aList):
+    for i in sub:
             while(i[reverse] != "_"):
                 word+=i[reverse]
                 reverse-=1
@@ -39,19 +24,49 @@ def dirIso(aList): # Isolates accession numbers from file names
                 inputList[word]+=1
             else:
                 inputList[word]=1
+            # ML[word]=[i + fileType]
             word=""
             reverse=-1
     return(inputList)
 
+def bashImports(): # Imports variables from BASH environment
+    sub=list(os.environ['sub'].split(" "))
+    output=str(os.environ['output'])
+    return(sub, output)
+
+def main(): # Main function
+    sub, output = bashImports()
+    masterList = fileIso(sub)
+    with open(output + "excelTest.pickle", "ab+") as pickle_that:
+        pickle.dump(masterList, pickle_that, protocol=pickle.HIGHEST_PROTOCOL)
+
+main()
+
+END_OF_PYTHON
+
+}
+
+compare(){
+        excel="${excel}" output="${output}" python3 - << END_OF_COMPARE
+
+import os
+import pandas as pd
+import pickles
+
+def unPickleThat(output):
+    with open(output + "excelTest.pickle") as unPickled:
+        dirList = pickle.load(unPickled)
+    return(dirList)
+
 def excelIso(found_excel): # Isolates accession numbers from file names
     inputList = pd.read_excel(found_excel)
-    excelList = plate_one["NamesInVCF"].tolist()
+    excelList = inputList["filename"].tolist()
     for fastq in excelList:
         fastq.strip(".fastq")
     reverse=-1
     inputList={}
     word=""
-    for index, i in enumerate(aList):
+    for i in found_excel:
             while(i[reverse] != "_"):
                 word+=i[reverse]
                 reverse-=1
@@ -64,37 +79,32 @@ def excelIso(found_excel): # Isolates accession numbers from file names
             reverse=-1
     return(inputList)
 
-def listCompare(sourceDir, excelDir, masterList):
-    for fileName in excelDir:
-        if(excelDir[fileName] == sourceDir[fileName]):
-
-
+def listCompare(dirList, excelList):
+    for fileName in dirList:
+        if(dirList[fileName] != excelList[fileName]):
+            print("Number mismatch for: " + fileName)
+            
 def bashImports(): # Imports variables from BASH environment
-    sub=list(os.environ['sub'].split(" "))
-    found_excel=str(os.environ['found_excel'])
+    excel=str(os.environ['excel'])
     output=str(os.environ['output'])
-    localDir=str(os.environ['localD'])
-    fileType=str(os.environ['fileType'])
-    return(sub, ori_path, found_excel, output, localDir, fileType)
+    return(excel, output)
 
 def main(): # Main function
-    sub, found_excel, output, localDir, fileType = bashImports()
-    masterList = fileIso(sub, localDir, fileType)
-    excelDir = excelIso(found_excel)
-    sourceDir = dirIso(aList, localDir)
+    excel, output = bashImports()
+    dirList = unPickleThat(output)
+    excelList = excelIso(excel)
+    listCompare(dirList, excelList)
 
 main()
 
-
-END_OF_PYTHON
+END_OF_COMPARE
 }
 
 master_list(){ # Creates listings from directory structures 
 
     local path=${1}
-    fileType=${2}
-    notFound_excel=${3}
-    found_excel=${3}
+    output=${2}
+    excel=${3}
 
     cd $path
     declare -a dir_list=$(ls -d */)
