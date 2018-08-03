@@ -47,7 +47,7 @@ END_OF_PYTHON
 }
 
 compare(){
-        excel="${excel}" output="${output}" python3 - << END_OF_COMPARE
+        nfExcel="{nfExcel}" excel="${excel}" output="${output}" python3 - << END_OF_COMPARE
 
 import os
 import pandas as pd
@@ -79,21 +79,25 @@ def excelIso(found_excel): # Isolates accession numbers from file names
             reverse=-1
     return(inputList)
 
-def listCompare(dirList, excelList):
+def listCompare(dirList, excelList, nfExcelList):
     for fileName in dirList:
         if(dirList[fileName] != excelList[fileName]):
-            print("Number mismatch for: " + fileName)
+            print("Number mismatch in found list: " + fileName)
+        if(dirList[fileName] != nfExcelList[fileName]):
+            print("Number mismatch in NOT FOUND: " + fileName)
             
 def bashImports(): # Imports variables from BASH environment
     excel=str(os.environ['excel'])
+    nfExcel=str(os.environ['nfExcel'])
     output=str(os.environ['output'])
-    return(excel, output)
+    return(excel, nfExcel, output)
 
 def main(): # Main function
-    excel, output = bashImports()
+    excel, nfExcel, output = bashImports()
     dirList = unPickleThat(output)
     excelList = excelIso(excel)
-    listCompare(dirList, excelList)
+    nfExcelList = excelIso(nfExcel)
+    listCompare(dirList, excelList, nfExcelList)
 
 main()
 
@@ -105,6 +109,7 @@ master_list(){ # Creates listings from directory structures
     local path=${1}
     output=${2}
     excel=${3}
+    nfExcel=${4}
 
     cd $path
     declare -a dir_list=$(ls -d */)
