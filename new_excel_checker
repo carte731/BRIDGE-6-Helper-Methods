@@ -1,0 +1,124 @@
+#!/bin/bash
+
+declare -a sub #creates a BASH list, used for saving lists of files held in directory
+module load python3_ML/3.6.4 # Loads Python-3 module for use
+
+python_Dataframe(){
+    
+    # Activates Python and exports BASH variables into the new Python environment
+    sub="${sub[@]}" found_excel="${found_xcel}" localD="${localDir}" output="${temploc}" fileType="${fileType}" python3 - <<END_OF_PYTHON
+
+import os
+import pandas as pd
+
+def fileIso(sub, localDir, fileType): # Isolates accession numbers from file names
+    reverse=-1
+    inputList={}
+    word=""
+    for index, i in enumerate(sub):
+            while(i[reverse] != "_"):
+                word+=i[reverse]
+                reverse-=1
+            word="".join(reversed(word))
+            # inputList[i + fileType]=[word]
+            inputList[word].append([i + fileType])
+            word=""
+            reverse=-1
+    return(inputList)
+
+def dirIso(aList): # Isolates accession numbers from file names
+    reverse=-1
+    inputList={}
+    word=""
+    for index, i in enumerate(aList):
+            while(i[reverse] != "_"):
+                word+=i[reverse]
+                reverse-=1
+            word="".join(reversed(word))
+            if(word in inputList):
+                inputList[word]+=1
+            else:
+                inputList[word]=1
+            word=""
+            reverse=-1
+    return(inputList)
+
+def excelIso(found_excel): # Isolates accession numbers from file names
+    inputList = pd.read_excel(found_excel)
+    excelList = plate_one["NamesInVCF"].tolist()
+    for fastq in excelList:
+        fastq.strip(".fastq")
+    reverse=-1
+    inputList={}
+    word=""
+    for index, i in enumerate(aList):
+            while(i[reverse] != "_"):
+                word+=i[reverse]
+                reverse-=1
+            word="".join(reversed(word))
+            if(word in inputList):
+                inputList[word]+=1
+            else:
+                inputList[word]=1
+            word=""
+            reverse=-1
+    return(inputList)
+
+def listCompare(sourceDir, excelDir, masterList):
+    for fileName in excelDir:
+        if(excelDir[fileName] == sourceDir[fileName]):
+
+
+def bashImports(): # Imports variables from BASH environment
+    sub=list(os.environ['sub'].split(" "))
+    found_excel=str(os.environ['found_excel'])
+    output=str(os.environ['output'])
+    localDir=str(os.environ['localD'])
+    fileType=str(os.environ['fileType'])
+    return(sub, ori_path, found_excel, output, localDir, fileType)
+
+def main(): # Main function
+    sub, found_excel, output, localDir, fileType = bashImports()
+    masterList = fileIso(sub, localDir, fileType)
+    excelDir = excelIso(found_excel)
+    sourceDir = dirIso(aList, localDir)
+
+main()
+
+
+END_OF_PYTHON
+}
+
+master_list(){ # Creates listings from directory structures 
+
+    local path=${1}
+    fileType=${2}
+    notFound_excel=${3}
+    found_excel=${3}
+
+    cd $path
+    declare -a dir_list=$(ls -d */)
+    counter=1
+    for subdirs in ${dir_list[@]}; do
+        declare -a sub=()
+        localDir="$path""$subdirs"
+        local dirFiles=$(find "$path""$subdirs" -type f -name "*${fileType}*")
+        for i in ${dirFiles[@]}; do
+            local filename=${i##*/}
+            filename=${filename%.*}
+            sub+=("$filename")
+        done
+        python_Dataframe
+        echo -e "ROUND $subdirs complete...\n"
+    done
+
+    echo -e "OPERATIONS COMPLETE...\n"
+}
+
+main(){ # Main function for BASH
+  
+    master_list "$@"
+
+}
+
+main "$@" # runs main function and imports parameters arguments.
