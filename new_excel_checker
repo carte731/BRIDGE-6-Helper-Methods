@@ -121,7 +121,7 @@ master_list(){ # Creates listings from directory structures
         python_Dataframe
         echo -e "ROUND $subdirs complete...\n"
     done
-
+    compare
     echo -e "OPERATIONS COMPLETE...\n"
 }
 
