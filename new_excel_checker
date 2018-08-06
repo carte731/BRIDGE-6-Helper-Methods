@@ -10,17 +10,21 @@ def fileIso(sub): # Isolates accession numbers from directory file names
     ML={}
     word=""
     for i in sub:
-            while(i[reverse] != "_"):
-                word+=i[reverse]
-                reverse-=1
-            word="".join(reversed(word))
-            if(word in inputList):
-                inputList[word]+=1
-            else:
-                inputList[word]=1
-            # ML[word].append(i + ".fastq")
-            word=""
-            reverse=-1
+        while(i[reverse] != "_"):
+            word+=i[reverse]
+            reverse-=1
+        word="".join(reversed(word))
+        if(word in inputList):
+            inputList[word]+=1
+            ML[word].append(i + ".fastq")            
+        else:
+            inputList[word]=1
+            ML[word]=[i + ".fastq"]
+        # ML[word].append(i + ".fastq")
+        # ML[word] += i + ".fastq"
+        # ML[i + ".fastq"]=word
+        word=""
+        reverse=-1
     return(inputList, ML)
 
 def excelIso(found_excel): # Isolates accession numbers from file names
@@ -30,6 +34,7 @@ def excelIso(found_excel): # Isolates accession numbers from file names
     [ newList.append(i.strip('.fastq')) for i in excelList ]
     reverse=-1
     inputList={}
+    EL={}
     word=""
     for i in newList:
         while(i[reverse] != "_"):
@@ -38,23 +43,30 @@ def excelIso(found_excel): # Isolates accession numbers from file names
         word="".join(reversed(word))
         if(word in inputList):
             inputList[word]+=1
+            EL[word].append(i + ".fastq")
         else:
             inputList[word]=1
+            EL[word]=[i + ".fastq"]
         word=""
         reverse=-1
-    return(inputList)
+    return(inputList, EL)
 
-def listCompare(masterList, excel, ML, path):
+def listCompare(masterList, excel, ML, EL, path):
     # print(excel)
     # print(masterList)
+    # print("BREAK\n")
     for fileName in masterList:
+        # print("BR\n")
+        # print(fileName)
         if(fileName in excel):
             # print(fileName + " FOUND!\n")
             if(masterList[fileName] != excel[fileName]):
                 print("Number mismatch in found list: " + fileName)
+                print(str(ML[fileName]))
+                print(str(EL[fileName]) + "\n\n")
         else:
-            # print(path + ML[fileName] + " NOT FOUND\n")
-            print(fileName + " NOT FOUND\n")
+            print(path + str(ML[fileName]) + " NOT FOUND\n")
+            # print(fileName + " NOT FOUND\n")
 
 
 def master_list(path): # Creates listings from directory structures 
@@ -72,8 +84,8 @@ def main(): # Main function
     path, excel = argImports()
     sub = master_list(path)
     masterList, ML = fileIso(sub)
-    excelList = excelIso(excel)
-    listCompare(masterList, excelList, ML, path)
+    excelList, EL = excelIso(excel)
+    listCompare(masterList, excelList, ML, EL, path)
 
     print("OPERATIONS COMPLETE...\n")
 
