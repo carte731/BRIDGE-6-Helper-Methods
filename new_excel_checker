@@ -31,7 +31,7 @@ def excelIso(found_excel): # Isolates accession numbers from file names
     inputList = pd.read_excel(found_excel)
     excelList = inputList["filename"].tolist()
     newList = []
-    [ newList.append(i.strip('.fastq')) for i in excelList ]
+    [ newList.append(str(i.strip('.fastq'))) for i in excelList ]
     reverse=-1
     inputList={}
     EL={}
