@@ -32,7 +32,6 @@ def excelIso(found_excel): # Isolates accession numbers from file names
     excelList = inputList["filename"].tolist()
     newList = []
     [ newList.append(i.strip('.fastq')) for i in excelList ]
-    # [ print(i) for i in excelList if(type(i) == float) ]
     reverse=-1
     inputList={}
     EL={}
@@ -53,26 +52,23 @@ def excelIso(found_excel): # Isolates accession numbers from file names
     return(inputList, EL)
 
 def listCompare(masterList, excel, ML, EL, path):
-    # print(excel)
-    # print(masterList)
-    # print("BREAK\n")
+    counter = 0
     for fileName in masterList:
-        # print("BR\n")
-        # print(fileName)
         if(fileName in excel):
-            # print(fileName + " FOUND!\n")
             if(masterList[fileName] != excel[fileName]):
+                counter += 1
                 print("Number mismatch in found list: " + fileName)
                 print(str(ML[fileName]))
                 print(str(EL[fileName]) + "\n\n")
         else:
+            counter += 1
             print(path + str(ML[fileName]) + " NOT FOUND\n")
-            # print(fileName + " NOT FOUND\n")
+    if(counter == 0):
+        print("\nNo ERRORS found...\n")
 
 
 def master_list(path): # Creates listings from directory structures 
     fastqFiles = [ os.path.splitext(f)[0] for f in os.listdir(path) if os.path.isfile(path + f) ]
-    # print(fastqFiles)
     return(fastqFiles)
 
     
@@ -88,7 +84,7 @@ def main(): # Main function
     excelList, EL = excelIso(excel)
     listCompare(masterList, excelList, ML, EL, path)
 
-    print("OPERATIONS COMPLETE...\n")
+    print("\nOPERATIONS COMPLETE...\n")
 
 
 main() # runs main function and imports parameters arguments.
