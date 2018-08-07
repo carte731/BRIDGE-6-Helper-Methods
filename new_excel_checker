@@ -33,7 +33,6 @@ def excelIso(found_excel): # Pulls files names from excel file
     newList = []
     newnameList = []
     [ newList.append(i.strip('.fastq')) for i in excelList ]
-    # [ newnameList.append(t[:-2]) for t in nameList if(t[-2] == "-")]
     for t in nameList:
         if(t[-2] == "-"):
             newnameList.append(t[:-2])
@@ -43,13 +42,12 @@ def excelIso(found_excel): # Pulls files names from excel file
     inputList={}
     EL={}
     word=""
-    for indx, i in enumerate(newList):
+    for i in newList:
         while(i[reverse] != "_"):
             word+=i[reverse]
             reverse-=1
         word="".join(reversed(word))
-        # print(newnameList)
-        if(word not in newnameList):
+        if(word not in newnameList): # Check if file name matches library-ID
             print("\nFile mis-match for: " + word + " : " + i + "\n")
         if(word in inputList):
             inputList[word]+=1
@@ -59,12 +57,14 @@ def excelIso(found_excel): # Pulls files names from excel file
             EL[word]=[i + ".fastq"]
         word=""
         reverse=-1
-    return(inputList, EL)
+    return(inputList, newnameList, EL)
 
-def listCompare(masterList, excel, ML, EL, path): # Compares dictory values to see if the entries are the same
+def listCompare(masterList, newnameList, excel, ML, EL, path): # Compares dictory values to see if the entries are the same
     counter = 0
     for fileName in masterList:
         if(fileName in excel):
+            if(fileName not in newnameList): # Check if file name matches library-ID
+                print("\nFile mis-match for: " + fileName + " - " + str(ML[fileName]) + " : " + str(EL[fileName]) + "\n")
             if(masterList[fileName] != excel[fileName]): # Checks if the number of entries are the same
                 counter += 1
                 print("\nNumber mismatch in found list: " + fileName)
@@ -91,8 +91,8 @@ def main(): # Main function
     path, excel = argImports()
     sub = master_list(path)
     masterList, ML = fileIso(sub)
-    excelList, EL = excelIso(excel)
-    listCompare(masterList, excelList, ML, EL, path)
+    excelList, newnameList, EL = excelIso(excel)
+    listCompare(masterList, newnameList, excelList, ML, EL, path)
 
     print("\nOPERATIONS COMPLETE...\n")
 
