@@ -4,6 +4,8 @@ import os
 import sys
 import pandas as pd
 
+## I don't check the accession number (name) match with the filename. I did this with other test I developed <name_script_here> 
+
 def fileIso(sub): # Isolates accession numbers from directory file names
     reverse=-1
     inputList={}
@@ -14,33 +16,41 @@ def fileIso(sub): # Isolates accession numbers from directory file names
             word+=i[reverse]
             reverse-=1
         word="".join(reversed(word))
-        if(word in inputList):
+        if(word in inputList): # If the accession number is there, add to the accession counter number
             inputList[word]+=1
-            ML[word].append(i + ".fastq")            
-        else:
+            ML[word].append(i + ".fastq") ## Another dictionary that tracks the full file name      
+        else: # If the accession number is not there, add it to dictionary and count it
             inputList[word]=1
             ML[word]=[i + ".fastq"]
-        # ML[word].append(i + ".fastq")
-        # ML[word] += i + ".fastq"
-        # ML[i + ".fastq"]=word
         word=""
         reverse=-1
     return(inputList, ML)
 
-def excelIso(found_excel): # Isolates accession numbers from file names
+def excelIso(found_excel): # Pulls files names from excel file
     inputList = pd.read_excel(found_excel)
     excelList = inputList["filename"].tolist()
+    nameList = inputList["library_ID"].tolist()
     newList = []
+    newnameList = []
     [ newList.append(i.strip('.fastq')) for i in excelList ]
+    # [ newnameList.append(t[:-2]) for t in nameList if(t[-2] == "-")]
+    for t in nameList:
+        if(t[-2] == "-"):
+            newnameList.append(t[:-2])
+        else:
+            newnameList.append(t)
     reverse=-1
     inputList={}
     EL={}
     word=""
-    for i in newList:
+    for indx, i in enumerate(newList):
         while(i[reverse] != "_"):
             word+=i[reverse]
             reverse-=1
         word="".join(reversed(word))
+        # print(newnameList)
+        if(word not in newnameList):
+            print("\nFile mis-match for: " + word + " : " + i + "\n")
         if(word in inputList):
             inputList[word]+=1
             EL[word].append(i + ".fastq")
@@ -51,15 +61,15 @@ def excelIso(found_excel): # Isolates accession numbers from file names
         reverse=-1
     return(inputList, EL)
 
-def listCompare(masterList, excel, ML, EL, path):
+def listCompare(masterList, excel, ML, EL, path): # Compares dictory values to see if the entries are the same
     counter = 0
     for fileName in masterList:
         if(fileName in excel):
-            if(masterList[fileName] != excel[fileName]):
+            if(masterList[fileName] != excel[fileName]): # Checks if the number of entries are the same
                 counter += 1
-                print("Number mismatch in found list: " + fileName)
-                print(str(ML[fileName]))
-                print(str(EL[fileName]) + "\n\n")
+                print("\nNumber mismatch in found list: " + fileName)
+                print("Directory listing: " + str(ML[fileName]))
+                print("Excel listing: " + str(EL[fileName]) + "\n\n")
         else:
             counter += 1
             print(path + str(ML[fileName]) + " NOT FOUND\n")
@@ -72,7 +82,7 @@ def master_list(path): # Creates listings from directory structures
     return(fastqFiles)
 
     
-def argImports():
+def argImports(): # Imports arguments from command line
     path= sys.argv[1]
     excel = sys.argv[2]
     return(path, excel)
