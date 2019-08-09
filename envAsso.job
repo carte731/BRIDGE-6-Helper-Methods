@@ -1,0 +1,17 @@
+#!/bin/bash -l
+
+#PBS -l mem=62gb,nodes=1:ppn=10,walltime=92:00:00
+#PBS -m abe
+#PBS -M carte731@umn.edu
+#PBS -N File_Redirects
+#PBS -q mesabi
+
+set -e
+set -o pipefail
+
+module load python3_ML/3.6.4
+module load md5deep_ML/2.0
+
+cd /home/morrellp/carte731/env_ass_methods/
+
+./envassmov.sh //scratch.global/BRIDG6_FASTQ/fastq_files //scratch.global /panfs/roc/groups/9/morrellp/carte731/new_excels
